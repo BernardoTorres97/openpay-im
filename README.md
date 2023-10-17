@@ -44,7 +44,7 @@ Bad Request - 400
 ```json
 {
   "amount": 100, // requerida
-  "description": "Cargo inicial a mi cuenta",
+  "description": "Cargo inicial a mi cuenta", // requerida
   "customer": {
     "name": "Juan", // requerida
     "last_name": "Vazquez Juarez",
