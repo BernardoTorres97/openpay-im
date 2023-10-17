@@ -28,7 +28,7 @@ Es necesario enviar una expresión cron. Se recomienda usar [CronGuru](https://c
 OK - 200
 
 ```json
-	"Se ha cambiado la expresión cron a "0 0 1 * *""
+"Se ha cambiado la expresión cron a '0 0 1 * *'"
 ```
 
 Bad Request - 400
@@ -46,7 +46,6 @@ Bad Request - 400
   "amount": 100, // requerida
   "description": "Cargo inicial a mi cuenta",
   "customer": {
-    // requerida
     "name": "Juan", // requerida
     "last_name": "Vazquez Juarez",
     "phone_number": "4448936475",
