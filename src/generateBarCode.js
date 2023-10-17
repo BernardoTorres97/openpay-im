@@ -3,9 +3,7 @@ const sequelize = require('./db')
 
 const openpay = new Openpay(process.env.MERCHANT_ID, process.env.PRIVATE_KEY)
 
-function generateBarCode(chargeRequest) {
-  // TODO: obtener todos los clientes de la BD a quienes se les enviará el Jasper
-
+async function generateBarCode(chargeRequest) {
   // const chargeRequest = {
   //   method: 'store',
   //   amount: 100,
@@ -19,56 +17,38 @@ function generateBarCode(chargeRequest) {
   //   },
   // }
 
-  try {
-    // TODO: generar pago en tienda para cada cliente
-    openpay.charges.create(chargeRequest, function (error, body) {
-      if (error) {
-        console.log(error)
-      } else {
-        // TODO: guardar el url del código de barras y el url del pago en BD y marcar estatus de la entidad como "código generado"
-        console.log(body)
-      }
-    })
-  } catch (err) {
-    console.log(err)
-  }
+  return new Promise((resolve) => {
+    try {
+      openpay.charges.create(chargeRequest, (error, body) => {
+        if (error) throw new Error(error)
+
+        resolve(body)
+      })
+    } catch (error) {
+      throw new Error(error)
+    }
+  })
 }
 
 async function generateAllBarCodes() {
-  const [results, metadata] = await sequelize.query(
-    'select  *, [dbo].[fn_getContactoPersonaFisica] (idpersonafisica,1301) as telefonoFijo, [dbo].[fn_getContactoPersonaFisica] (idpersonafisica,1305) as email from SICOINT_GenerarEnvioCobranzaView s where saldoVencidoRea >100 and idEstatus=2609 and idDepartamento in(7901,7902,79025)',
+  const [results] = await sequelize.query(
+    'select s.foliointerno, s.idCliente, s.idPersonaFisica, s.saldoVencidoRea, s.nombreCliente, [dbo].[fn_getContactoPersonaFisica] (idpersonafisica,1301) as telefonoFijo, [dbo].[fn_getContactoPersonaFisica] (idpersonafisica,1305) as email from SICOINT_GenerarEnvioCobranzaView s where saldoVencidoRea > 100 and idEstatus=2609 and idDepartamento in(7901,7902,79025)',
   )
 
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < results.length; i++) {
     const chargeRequest = {
       method: 'store',
       amount: results[i].saldoVencidoRea,
-      description: `Saldo vencido ${results[i].folioInterno}`,
+      description: `Saldo vencido ${results[i].foliointerno}`,
       customer: {
         name: results[i].nombreCliente.toUpperCase(),
-        email: results[i].contacto,
-        phone_number: results[i].contacto,
+        email: results[i].email,
+        phone_number: results[i].telefonoFijo,
       },
     }
 
-    console.log(chargeRequest)
-
-    generateBarCode(chargeRequest)
+    if (results[i].email) await generateBarCode(chargeRequest)
   }
-
-  // results.forEach((cliente) => {
-  //   const chargeRequest = {
-  //     method: 'store',
-  //     customer: {
-  //       name: cliente.nombreCliente.toUpperCase(),
-  //       last_name: ' ',
-  //     },
-  //     description: '',
-  //     amount: '',
-  //   }
-
-  //   // generateBarCode(chargeRequest)
-  // })
 }
 
 module.exports = {
