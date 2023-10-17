@@ -4,19 +4,6 @@ const sequelize = require('./db')
 const openpay = new Openpay(process.env.MERCHANT_ID, process.env.PRIVATE_KEY)
 
 async function generateBarCode(chargeRequest) {
-  // const chargeRequest = {
-  //   method: 'store',
-  //   amount: 100,
-  //   description: 'Cargo inicial a mi cuenta',
-  //   SALDO VENCIDO + FOLIO
-  //   customer: {
-  //     name: 'Cliente Mx',
-  //     last_name: 'Vazquez Juarez',
-  //     phone_number: '4448936475',
-  //     email: 'juan.vazquez@empresa.mx',
-  //   },
-  // }
-
   return new Promise((resolve) => {
     try {
       openpay.charges.create(chargeRequest, (error, body) => {
