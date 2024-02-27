@@ -4,6 +4,7 @@ const sequelize = require('./db')
 const openpay = new Openpay(process.env.MERCHANT_ID, process.env.PRIVATE_KEY)
 
 async function generateBarCode(chargeRequest) {
+  console.log(chargeRequest)
   return new Promise((resolve) => {
     try {
       openpay.charges.create(chargeRequest, (error, body) => {
@@ -19,7 +20,7 @@ async function generateBarCode(chargeRequest) {
 
 async function generateAllBarCodes() {
   const [results] = await sequelize.query(
-    'select s.foliointerno, s.idCliente, s.idPersonaFisica, s.saldoVencidoRea, s.nombreCliente, [dbo].[fn_getContactoPersonaFisica] (idpersonafisica,1301) as telefonoFijo, [dbo].[fn_getContactoPersonaFisica] (idpersonafisica,1305) as email from SICOINT_GenerarEnvioCobranzaView s where saldoVencidoRea > 100 and idEstatus=2609 and idDepartamento in(7901,7902,79025)',
+    'SELECT s.foliointerno, s.idCliente, s.idPersonaFisica, s.saldoVencidoRea, s.nombreCliente, [dbo].[fn_getContactoPersonaFisica] (idpersonafisica,1301) AS telefonoFijo, [dbo].[fn_getContactoPersonaFisica] (idpersonafisica,1305) AS email FROM SICOINT_GenerarEnvioCobranzaView s WHERE saldoVencidoRea > 100 AND idEstatus=2609 AND idDepartamento IN(7901,7902,79025)',
   )
 
   for (let i = 0; i < results.length; i++) {

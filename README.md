@@ -1,6 +1,6 @@
 # Generación de código de barras mediante OpenPay
 
-Por defecto se correrá un script cada día 15 y 30 del mes que generará los códigos de barras para los clientes qe cumplan con la condición "saldoVencidoRea > 100 and idEstatus=2609 and idDepartamento in(7901,7902,79025)"
+Por defecto se correrá un script cada día 15 y 30 del mes que generará los códigos de barras para los clientes que cumplan con la condición "saldoVencidoRea > 100 and idEstatus=2609 and idDepartamento in(7901,7902,79025)"
 
 ## API
 
