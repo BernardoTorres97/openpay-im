@@ -36,8 +36,14 @@ app.post('/generate-bar-code', async (req, res) => {
 })
 
 app.post('/generate-all-bar-codes', async (req, res) => {
-  await barCodeGenerator.generateAllBarCodes()
-  res.send('Se han generado todos los códigos de barras pendientes')
+  const { NUM_CARGOS_ERROR, NUM_CARGOS_GENERADOS } =
+    await barCodeGenerator.generateAllBarCodes()
+
+  res.send({
+    message: 'Se han generado todos los códigos de barras pendientes',
+    NUM_CARGOS_GENERADOS,
+    NUM_CARGOS_ERROR,
+  })
 })
 
 app.listen(port, () => {
