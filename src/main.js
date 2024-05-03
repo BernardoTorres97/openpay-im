@@ -9,7 +9,7 @@ let cron = '0 0 15,30 * *'
 const express = require('express')
 const app = express()
 app.use(express.json())
-const port = process.env.SERVER_PORT
+const port = process.env.PORT
 
 let job = schedule.scheduleJob(cron, function () {
   barCodeGenerator.generateAllBarCodes()
