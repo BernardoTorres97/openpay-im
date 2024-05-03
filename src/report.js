@@ -44,7 +44,7 @@ module.exports = function report(payload) {
               >
               <div>
                 <img
-                  src="https://sandbox-api.openpay.mx/barcode/1010100352090463"
+                  src="${payload.imgUrl}"
                   alt="Código barras"
                   class="img-fluid"
                 />

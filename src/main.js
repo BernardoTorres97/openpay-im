@@ -2,7 +2,7 @@ require('dotenv').config()
 
 const barCodeGenerator = require('./generateBarCode')
 const schedule = require('node-schedule')
-const { sequelize, gbplusDev } = require('./db')
+const { sequelize, gbplus } = require('./db')
 
 let cron = '0 0 15,30 * *'
 
@@ -54,12 +54,16 @@ app.post('/webhook-handler', async (req, res) => {
 
   if (body.type === 'charge.succeeded' && body.transaction?.status === 'completed') {
     const payload = {
-      tiempoPago: body.event_date,
-      cantidadPagada: body.transaction?.amount,
-      metodo: body.transaction?.method,
-      transactionId: body.transaction?.id,
-      orderId: body.transaction?.order_id,
+      tipoEvento: body.type,
+      importe: body.transaction?.amount,
+      idTransaccion: body.transaction?.id,
+      tiempoPago: body.event_date.toISOString().replace('T', ' ').substring(0, 19),
     }
+
+    await gbplus.query(`
+        INSERT INTO op.eventoOpenpay (tipoEvento, importe, idTransaccion, tiempoPago)
+        VALUES ('${payload.tipoEvento}', ${payload.importe}, '${payload.idTransaccion}', '${payload.tiempoPago}')  
+      `)
   }
 })
 

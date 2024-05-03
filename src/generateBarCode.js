@@ -84,6 +84,7 @@ async function generateBarCode(chargePayload) {
       saldoVencidoRea: payload.montoPagar,
       referencia: payload.referencia,
       fechaLimite,
+      imgUrl: payload.urlCodigoBarras,
     })
 
     pdf.create(reportContent).toFile(reportName, function (err, res) {
