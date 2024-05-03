@@ -1,22 +1,25 @@
 const Openpay = require('openpay')
-const { sequelize, gbplusDev } = require('./db')
+const { sequelize, gbplus } = require('./db')
 const pdf = require('html-pdf')
+
+const report = require('./report')
 
 const openpay = new Openpay(process.env.MERCHANT_ID, process.env.PRIVATE_KEY)
 
 let NUM_CARGOS_GENERADOS = 0
 let NUM_CARGOS_ERROR = 0
+let NUM_CARGOS_SIN_EMAIL = 0
 
 async function registerCharge(payload) {
   try {
-    await gbplusDev.query(`
-      INSERT INTO op.pagoAdeudo (folioInterno, idOrden, montoPagar, tiempoCreacion, urlCodigoBarras, idTransaccionOP, urlPdf)
+    await gbplus.query(`
+      INSERT INTO op.pagoAdeudo (folioInterno, idOrden, montoPagar, tiempoCreacion, urlCodigoBarras, idTransaccionOP, urlPdf, referencia)
       VALUES ('${payload.folioInterno}', ${payload.idOrden}, ${payload.montoPagar}, '${
       payload.tiempoCreacion
     }', 
       '${payload.urlCodigoBarras.split('?')[0]}', '${payload.idTransaccionOP}', '${
       payload.urlPdf
-    }')
+    }', '${payload.referencia}')
     `)
   } catch (error) {
     throw new Error(error)
@@ -31,6 +34,7 @@ async function getBarCode(chargePayload) {
           NUM_CARGOS_ERROR += 1
           return reject(error)
         }
+        console.log(body)
 
         NUM_CARGOS_GENERADOS += 1
         return resolve(body)
@@ -65,9 +69,30 @@ async function generateBarCode(chargePayload) {
       urlCodigoBarras: result?.payment_method?.barcode_url,
       urlPdf: result?.payment_method?.url_store,
       idTransaccionOP: result?.id,
+      referencia: result?.payment_method?.reference,
     }
 
     await registerCharge(payload)
+
+    const reportName = `./reports/saldoVencido_${payload.referencia}.pdf`
+
+    const fechaLimite = new Date(new Date().getTime() + 2592000000).toLocaleDateString(
+      'mx-SP',
+    )
+
+    const reportContent = report({
+      saldoVencidoRea: payload.montoPagar,
+      referencia: payload.referencia,
+      fechaLimite,
+    })
+
+    pdf.create(reportContent).toFile(reportName, function (err, res) {
+      if (err) {
+        console.log(err)
+      } else {
+        console.log(res)
+      }
+    })
   } catch (error) {
     console.log(error)
   }
@@ -76,9 +101,10 @@ async function generateBarCode(chargePayload) {
 async function generateAllBarCodes() {
   NUM_CARGOS_ERROR = 0
   NUM_CARGOS_GENERADOS = 0
+  NUM_CARGOS_SIN_EMAIL = 0
 
   const [results] = await sequelize.query(`
-    SELECT TOP 10
+    SELECT TOP 5
       s.idOrden,
       s.foliointerno AS folioInterno,
       s.idCliente,
@@ -90,7 +116,7 @@ async function generateAllBarCodes() {
       pa.urlCodigoBarras 
     FROM
       SICOINT_GenerarEnvioCobranzaView s WITH ( NOLOCK )
-      LEFT JOIN gbplusDev.op.pagoAdeudo pa WITH ( NOLOCK ) ON pa.folioInterno = s.folioInterno 
+      LEFT JOIN gbplus.op.pagoAdeudo pa WITH ( NOLOCK ) ON pa.folioInterno = s.folioInterno 
     WHERE
       saldoVencidoRea > 100 
       AND idEstatus = 2609 
@@ -112,6 +138,8 @@ async function generateAllBarCodes() {
       } else {
         promises.push(generateBarCode(payload))
       }
+    } else {
+      NUM_CARGOS_SIN_EMAIL += 1
     }
   }
 
@@ -120,6 +148,7 @@ async function generateAllBarCodes() {
   return {
     NUM_CARGOS_ERROR,
     NUM_CARGOS_GENERADOS,
+    NUM_CARGOS_SIN_EMAIL,
   }
 }
 
@@ -138,12 +167,12 @@ function generateMultipleBarcodes(chargePayload) {
       adeudo = 0
     }
 
-    promises.push(
-      generateBarCode({
-        ...chargePayload,
-        saldoVencidoRea: Number(saldoVencidoRea.toFixed(2)),
-      }),
-    )
+    const payload = {
+      ...chargePayload,
+      saldoVencidoRea: Number(saldoVencidoRea.toFixed(2)),
+    }
+
+    promises.push(generateBarCode(payload))
   }
 
   return promises

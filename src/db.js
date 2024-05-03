@@ -13,19 +13,19 @@ const sequelize = new Sequelize({
   password: process.env.DB_PASSWORD,
 })
 
-const gbplusDev = new Sequelize({
+const gbplus = new Sequelize({
   dialect: 'mssql',
   dialectOptions: {
     instanceName: 'MSSQLSERVER01',
     trustedConnection: true,
   },
   host: process.env.DB_HOST,
-  database: process.env.DB_NAME_GBPLUSDEV,
+  database: process.env.DB_NAME_GBPLUS,
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
 })
 
 module.exports = {
   sequelize,
-  gbplusDev,
+  gbplus,
 }

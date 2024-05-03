@@ -1,4 +1,10 @@
-<!DOCTYPE html>
+const payload = {
+  fechaLimite: '',
+}
+
+module.exports = function report(payload) {
+  return `
+   <!DOCTYPE html>
 <html>
   <head>
     <title>Document</title>
@@ -34,7 +40,7 @@
             <div>
               <span class="container-title block">Fecha límite de pago:</span>
               <span class="block" style="margin-top: 6px; margin-bottom: 12px"
-                >31 DE MAYO DE 2024</span
+                >${payload.fechaLimite}</span
               >
               <div>
                 <img
@@ -53,7 +59,7 @@
               <span
                 class="block"
                 style="text-align: center; margin-top: 8px; font-weight: 600"
-                >1010102963264684</span
+                >${payload.referencia}</span
               >
             </div>
           </div>
@@ -65,7 +71,7 @@
           <span
             class="block text-center"
             style="font-weight: 600; font-size: 36px; margin-top: 16px"
-            >$10,307.67<span style="margin-left: 20px; font-size: 20px">MXN</span></span
+            >$${payload.saldoVencidoRea.toLocaleString()}<span style="margin-left: 20px; font-size: 20px">MXN</span></span
           >
           <span class="label" style="margin-top: 24px"
             >La comisión por recepción del pago varía de acuerdo a los términos y
@@ -302,3 +308,6 @@
     margin: 0 20px;
   }
 </style>
+
+  `
+}

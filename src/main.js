@@ -2,6 +2,8 @@ require('dotenv').config()
 
 const barCodeGenerator = require('./generateBarCode')
 const schedule = require('node-schedule')
+const { sequelize, gbplusDev } = require('./db')
+
 let cron = '0 0 15,30 * *'
 
 const express = require('express')
@@ -36,14 +38,29 @@ app.post('/generate-bar-code', async (req, res) => {
 })
 
 app.post('/generate-all-bar-codes', async (req, res) => {
-  const { NUM_CARGOS_ERROR, NUM_CARGOS_GENERADOS } =
+  const { NUM_CARGOS_ERROR, NUM_CARGOS_GENERADOS, NUM_CARGOS_SIN_EMAIL } =
     await barCodeGenerator.generateAllBarCodes()
 
   res.send({
     message: 'Se han generado todos los códigos de barras pendientes',
     NUM_CARGOS_GENERADOS,
     NUM_CARGOS_ERROR,
+    NUM_CARGOS_SIN_EMAIL,
   })
+})
+
+app.post('/webhook-handler', async (req, res) => {
+  const { body } = req
+
+  if (body.type === 'charge.succeeded' && body.transaction?.status === 'completed') {
+    const payload = {
+      tiempoPago: body.event_date,
+      cantidadPagada: body.transaction?.amount,
+      metodo: body.transaction?.method,
+      transactionId: body.transaction?.id,
+      orderId: body.transaction?.order_id,
+    }
+  }
 })
 
 app.listen(port, () => {
