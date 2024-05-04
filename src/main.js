@@ -64,6 +64,10 @@ app.post('/webhook-handler', async (req, res) => {
         INSERT INTO op.eventoOpenpay (tipoEvento, importe, idTransaccion, tiempoPago)
         VALUES ('${payload.tipoEvento}', ${payload.importe}, '${payload.idTransaccion}', '${payload.tiempoPago}')  
       `)
+
+    console.log(req.body)
+
+    return res.send({ message: 'ok' })
   }
 })
 
