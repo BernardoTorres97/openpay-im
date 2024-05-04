@@ -52,6 +52,8 @@ app.post('/generate-all-bar-codes', async (req, res) => {
 app.post('/webhook-handler', async (req, res) => {
   const { body } = req
 
+  console.log(body)
+
   if (body.type === 'charge.succeeded' && body.transaction?.status === 'completed') {
     const payload = {
       tipoEvento: body.type,
@@ -64,8 +66,6 @@ app.post('/webhook-handler', async (req, res) => {
         INSERT INTO op.eventoOpenpay (tipoEvento, importe, idTransaccion, tiempoPago)
         VALUES ('${payload.tipoEvento}', ${payload.importe}, '${payload.idTransaccion}', '${payload.tiempoPago}')  
       `)
-
-    console.log(req.body)
 
     return res.send({ message: 'ok' })
   }
