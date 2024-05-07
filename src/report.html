@@ -4,6 +4,163 @@
     <title>Document</title>
   </head>
   <body>
+    <div class="flex-center" style="width: 100%">
+      <div id="logoIntermercado" style="margin-right: 40px">
+        <img
+          src="https://intermercado.mx/wp-content/uploads/2021/02/logo-web-im-1.png"
+          alt="Logo Intermercado"
+          class="img-fluid"
+        />
+      </div>
+      <div id="headerContainer">
+        <span style="font-weight: 500; font-size: 28px" class="block"
+          >ESTADO DE CUENTA</span
+        >
+        <div style="font-size: 12px">
+          <span class="block" style="font-size: 23px">Todo a tu alcance</span>
+          <span class="block">GB Plus SA de CV SOFOM ENR</span>
+          <span class="block">RFC GPL0704252G3</span>
+          <span class="block">Ignacio Allende 8, Colonia Centro</span>
+        </div>
+      </div>
+    </div>
+
+    <section style="padding: 0 40px; width: 100%; font-size: 11px; margin-top: 24px">
+      <div class="flex-between">
+        <div>
+          <div class="card">
+            <span class="label">INFORMACIÓN GENERAL</span>
+            <span class="block"><b>Nombre: </b>${info.Nombre}</span>
+            <span class="block"><b>Convenio: </b>${info.convenio}</span>
+          </div>
+          <div class="card" style="margin-top: 16px">
+            <span class="block"><b>Tasa Mensual: </b>${info.TasaMensual}</span>
+            <span class="block"><b>Convenio: </b>${info.TasaAnual}</span>
+            <span class="block"><b>CAT: </b>${(info.CAT * 100).toFixed(2)}%</span>
+            <span class="block"><b>IVA: </b>16%</span>
+          </div>
+        </div>
+        <div class="card">
+          <span class="block"><b>Tipo de servicio: </b>${info.TipoServicio}</span>
+          <span class="block"><b>Clave del client: </b>${info.ClaveCliente}</span>
+          <span class="block"><b>Período: </b>${info.PeriodoEmision}</span>
+          <span class="block"><b>Fecha límite pago: </b>${info.FechaLimitePago}</span>
+          <span class="block"
+            ><b>Saldo inicial: </b>${info.SaldoInicial.toLocaleString()}</span
+          >
+          <span class="block"
+            ><b>Total abonado: </b>${info.TotalAbonado.toLocaleString()}</span
+          >
+          <span class="block"
+            ><b>Saldo actual: </b>${info.SaldoActual.toLocaleString()}</span
+          >
+          <span class="block"><b>Fecha emisión: </b>${info.FechaEmision}</span>
+          <span class="block"><b>Estado del cliente: </b>${info.EstadoCliente}</span>
+        </div>
+      </div>
+
+      <span class="label">DATOS DEL CRÉDITO</span>
+      <div class="card flex" style="margin: 0 auto; text-align: center">
+        <div>
+          <b class="block">Folio Solicitud:</b>
+          <span class="block">${info.folioInterno}</span>
+        </div>
+        <div>
+          <b class="block">Fecha Venta:</b>
+          <span class="block">${info.FechaVenta}</span>
+        </div>
+        <div>
+          <b class="block">Plazos:</b>
+          <span class="block">${info.Plazos}</span>
+        </div>
+        <div>
+          <b class="block">Descuento Periodico:</b>
+          <span class="block">${info.DescuentoPeriodico.toLocaleString()}</span>
+        </div>
+        <div>
+          <b class="block">Periodo Inicio:</b>
+          <span class="block">${info.PeriodoInicio}</span>
+        </div>
+        <div>
+          <b class="block">Periodo Fin:</b>
+          <span class="block">${info.PeriodoFin}</span>
+        </div>
+        <div>
+          <b class="block">Importe:</b>
+          <span class="block">${info.Importe.toLocaleString()}</span>
+        </div>
+      </div>
+
+      <span class="label">DATOS DEL SERVICIO</span>
+
+      <div class="card flex" style="margin: 0 auto">
+        <div>
+          <b class="block">Modelo:</b>
+          <span class="block">${info.Modelo}</span>
+        </div>
+        <div>
+          <b class="block">No. Serie:</b>
+          <span class="block">${info.NoSerie}</span>
+        </div>
+        <div>
+          <b class="block">Descripción:</b>
+          <span class="block">${info.Descripcion}</span>
+        </div>
+        <div>
+          <b class="block">Importe:</b>
+          <span class="block">${info.Importe.toLocaleString()}</span>
+        </div>
+      </div>
+      <span class="block" style="margin-top: 2px"
+        ><b>Total: </b>${info.Importe.toLocaleString()}</span
+      >
+    </section>
+
+    <section style="margin: 80px 40px 0 40px; font-size: 11px">
+      <span class="label"
+        ><b>Erika Hernández: Unidad Especializada de Atención a Usuarios</b></span
+      >
+      <span class="block"
+        ><b>Domicilio: </b>Ignacio Allende 8, Colonia Centro, Xalapa, Veracruz, C. P.
+        91000 <b style="margin-left: 40px">Teléfonos: </b>01 228 8418300, 01 800
+        5009195</span
+      >
+      <span class="block"
+        ><b>Correo electrónico: </b
+        ><a href="mailto:atencionclientes@intermercado.com.mx"
+          >atencionclientes@intermercado.com.mx</a
+        ><b style="margin-left: 40px">Página de interenet: </b
+        ><a href="http://www.intermercado.com.mx" target="_blank"
+          >http://www.intermercado.com.mx</a
+        ></span
+      >
+      <b class="block">
+        Comisión Nacional para la Protección y Defensa de los Usuarios de Servicios
+        Financieros (CONDUSEF):
+      </b>
+      <span class="block"
+        >Con fundamento en el artículo 23 de la Ley para la Transparencia y Ordenamiento
+        de los Servicios Financieros, el plazo para presentar solicitud de aclaración: 90
+        días naturales contador a partir de la fecha de corte o, en su caso, de la
+        realización de la operación o del servicio.</span
+      >
+      <div
+        class="flex-between"
+        style="
+          color: #f1f1f1;
+          background-color: #28367d;
+          width: 100%;
+          padding: 4px 6px;
+          margin-top: 6px;
+        "
+      >
+        <a href="http://www.intermercado.com.mx" target="_blank" style="color: #f1f1f1"
+          >http://www.intermercado.com.mx</a
+        >
+        <b>Ignacio Allende 8, Colonia Centro, Xalapa, Veracruz, C.P. 91000</b>
+      </div>
+    </section>
+
     <div id="header">
       <div id="logoIntermercado">
         <img
@@ -142,28 +299,28 @@
           <div>
             <img src="https://i.ibb.co/gJNRdg7/tiendas-k.jpg" alt="" class="img-fluid" />
           </div>
-          <div>
+          <div style="width: 130px">
             <img src="https://i.ibb.co/qxGskr1/ahorro.jpg" alt="" class="img-fluid" />
           </div>
-          <div>
+          <div style="width: 130px">
             <img src="https://i.ibb.co/GtKXSJR/benavides.png" alt="" class="img-fluid" />
           </div>
         </div>
         <div class="flex-center logos">
-          <div>
+          <div style="width: 130px">
             <img src="https://i.ibb.co/8zScK0S/walmart.jpg" alt="" class="img-fluid" />
           </div>
-          <div>
+          <div style="width: 130px">
             <img src="https://i.ibb.co/8rRwKVH/sams.png" alt="" class="img-fluid" />
           </div>
-          <div>
+          <div style="width: 130px">
             <img
               src="https://i.ibb.co/Dp2FRbS/bodega-Aurrera-express.png"
               alt=""
               class="img-fluid"
             />
           </div>
-          <div>
+          <div style="width: 130px">
             <img
               src="https://i.ibb.co/8xtT1H7/walmart-express.png"
               alt=""
@@ -300,5 +457,39 @@
   .logos div {
     width: 50px;
     margin: 0 20px;
+  }
+
+  #headerContainer {
+    background-color: #28367d;
+    color: #eee;
+    text-align: center;
+    width: 100%;
+    display: -webkit-box;
+    display: flex;
+    -webkit-justify-content: space-between;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    align-items: center;
+    padding: 18px 50px 18px 70px;
+  }
+
+  .card {
+    border: 2px solid #111;
+    padding: 4px 8px;
+  }
+
+  .flex-between {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-justify-content: space-between;
+    justify-content: space-between;
+  }
+
+  .card div {
+    margin-right: 24px;
+  }
+
+  a {
+    color: black;
   }
 </style>

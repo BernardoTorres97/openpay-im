@@ -15,6 +15,10 @@ let job = schedule.scheduleJob(cron, function () {
   barCodeGenerator.generateAllBarCodes()
 })
 
+app.get('/hello', (req, res) => {
+  return res.send({ message: 'Hello World!' })
+})
+
 app.post('/set-cron', (req, res) => {
   cron = req.body.cron
   const newJob = job.reschedule(cron)

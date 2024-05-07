@@ -25,7 +25,20 @@ const gbplus = new Sequelize({
   password: process.env.DB_PASSWORD,
 })
 
+const intermercado = new Sequelize({
+  dialect: 'mssql',
+  dialectOptions: {
+    instanceName: 'MSSQLSERVER01',
+    trustedConnection: true,
+  },
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME_INTERMERCADO,
+  username: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+})
+
 module.exports = {
   sequelize,
   gbplus,
+  intermercado,
 }
