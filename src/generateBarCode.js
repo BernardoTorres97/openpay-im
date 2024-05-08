@@ -207,7 +207,7 @@ async function generateAllBarCodes() {
   NUM_CARGOS_SIN_EMAIL = 0
 
   const [results] = await sequelize.query(`
-    SELECT TOP 2
+    SELECT TOP 3
       s.idOrden,
       s.foliointerno AS folioInterno,
       s.idCliente,
