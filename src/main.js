@@ -16,6 +16,7 @@ let job = schedule.scheduleJob(cron, function () {
 })
 
 app.get('/hello', (req, res) => {
+  console.log('Hello World')
   return res.send({ message: 'Hello World!' })
 })
 
@@ -70,8 +71,8 @@ app.post('/webhook-handler', async (req, res) => {
     }
 
     await gbplus.query(`
-        INSERT INTO op.eventoOpenpay (tipoEvento, importe, idTransaccion, tiempoPago)
-        VALUES ('${payload.tipoEvento}', ${payload.importe}, '${payload.idTransaccion}', '${payload.tiempoPago}')  
+        INSERT INTO op.eventoOpenpay (tipoEvento, importe, idTransaccion, tiempoCreacion)
+        VALUES ('${payload.tipoEvento}', ${payload.importe}, '${payload.idTransaccion}', '${payload.tiempoCreacion}')  
       `)
   }
 
