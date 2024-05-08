@@ -63,7 +63,10 @@ app.post('/webhook-handler', async (req, res) => {
       tipoEvento: body.type,
       importe: body.transaction?.amount,
       idTransaccion: body.transaction?.id,
-      tiempoPago: body.event_date.toISOString().replace('T', ' ').substring(0, 19),
+      tiempoPago: new Date(body.event_date || null)
+        .toISOString()
+        .replace('T', ' ')
+        .substring(0, 19),
     }
 
     await gbplus.query(`
