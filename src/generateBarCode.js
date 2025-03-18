@@ -1,9 +1,16 @@
 const Openpay = require('openpay')
 const { sequelize, gbplus, intermercado } = require('./db')
 const pdf = require('html-pdf')
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
 
 const report = require('./report')
-
+const s3 = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+})
 const openpay = new Openpay(process.env.MERCHANT_ID, process.env.PRIVATE_KEY)
 
 let NUM_CARGOS_GENERADOS = 0
@@ -98,11 +105,24 @@ async function generateBarCode(chargePayload) {
       },
     }
 
-    pdf.create(reportContent, options).toFile(reportName, function (err, res) {
+    pdf.create(reportContent, options).toBuffer(async (err, buffer) => {
       if (err) {
-        console.log(err)
-      } else {
-        console.log(res)
+        return
+      }
+
+      const params = {
+        Bucket: 'gbplus.inter3.testing',
+        Key: `paynet/${chargePayload.idOrden}.pdf`,
+        Body: buffer,
+        ContentType: 'application/pdf',
+        ACL: 'public-read',
+      }
+
+      try {
+        const command = new PutObjectCommand(params)
+        await s3.send(command)
+      } catch (error) {
+        console.log(error)
       }
     })
   } catch (error) {
@@ -201,13 +221,13 @@ async function getEdoCuenta(idOrden) {
   return result
 }
 
-async function generateAllBarCodes() {
+async function generateAllBarCodes(top = null) {
   NUM_CARGOS_ERROR = 0
   NUM_CARGOS_GENERADOS = 0
   NUM_CARGOS_SIN_EMAIL = 0
 
-  const [results] = await sequelize.query(`
-    SELECT TOP 3
+  const query = `SELECT
+      ${top ? `TOP ${top}` : ''}
       s.idOrden,
       s.foliointerno AS folioInterno,
       s.idCliente,
@@ -225,7 +245,9 @@ async function generateAllBarCodes() {
       AND idEstatus = 2609 
       AND idDepartamento IN ( 7901, 7902, 79025 ) 
       AND pa.urlCodigoBarras IS NULL  
-  ;`)
+  ;`
+
+  const [results] = await sequelize.query(query)
 
   const promises = []
 

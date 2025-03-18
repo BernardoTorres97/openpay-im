@@ -342,7 +342,9 @@ module.exports = function report(payload) {
           <div style="width: 130px">
             <img src="https://i.ibb.co/qxGskr1/ahorro.jpg" alt="" class="img-fluid" />
           </div>
-
+          <div style="width: 130px">
+            <img src="https://i.ibb.co/KzxCKNQn/farmacia-guadalajara-e1663854661466.jpg" alt="Logo Super Farmacia" class="img-fluid" />
+          </div>
         </div>
         <div class="flex-center logos">
           <div style="width: 100px">
