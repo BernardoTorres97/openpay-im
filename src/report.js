@@ -215,7 +215,7 @@ module.exports = function report(payload) {
         >
         <div id="logoPaynet" class="inline-block">
           <img
-            src="https://site.openpay.mx/recursos/img/marketing_kit/logo_paynet1.png"
+            src="https://www.onlinecasinoreports.com.mx/images/paynet-big.png"
             alt="Logo Paynet"
             class="img-fluid"
           />
@@ -320,7 +320,7 @@ module.exports = function report(payload) {
         </ol>
         <span class="label" style="margin-top: 18px"
           >Si tienes dudas comunícate a Intermercado al teléfono 800 500 9195 o al correo
-          atencionaclientes@intermercado.com.mx</span
+          atencionclientes@intermercado.com.mx</span
         >
       </div>
     </div>
@@ -342,9 +342,7 @@ module.exports = function report(payload) {
           <div style="width: 130px">
             <img src="https://i.ibb.co/qxGskr1/ahorro.jpg" alt="" class="img-fluid" />
           </div>
-          <div style="width: 130px">
-            <img src="https://i.ibb.co/GtKXSJR/benavides.png" alt="" class="img-fluid" />
-          </div>
+
         </div>
         <div class="flex-center logos">
           <div style="width: 100px">
