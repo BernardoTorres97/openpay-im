@@ -1,5 +1,5 @@
 const Openpay = require('openpay')
-const { sequelize, gbplus, intermercado } = require('./db')
+const { sequelize, gbplus } = require('./db')
 const pdf = require('html-pdf')
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
 
@@ -80,8 +80,6 @@ async function generateBarCode(chargePayload) {
 
     await registerCharge(payload)
 
-    const reportName = `./reports/saldoVencido_${payload.referencia}.pdf`
-
     const fechaLimite = new Date(new Date().getTime() + 2592000000).toLocaleDateString(
       'mx-SP',
     )
@@ -155,10 +153,15 @@ async function generateAllBarCodes(top = null) {
 
   const [results] = await sequelize.query(query)
 
+  console.log(`Total de cargos a generar: ${results.length}`)
+
   const promises = []
 
   for (let i = 0; i < results.length; i++) {
     if (results[i].email) {
+      console.log(
+        `Generando cargo ${i + 1} de ${results.length} - idOrden: ${results[i].idOrden}`,
+      )
       const payload = {
         ...results[i],
         saldoVencidoRea: Number(results[i].saldoVencidoRea.toFixed(2)),
