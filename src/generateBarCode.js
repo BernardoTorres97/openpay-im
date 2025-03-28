@@ -1,7 +1,10 @@
 const Openpay = require('openpay')
-const { sequelize, gbplus } = require('./db')
 const pdf = require('html-pdf')
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
+
+const pdfToPngBuffer = require('./pdfToPng')
+const { sequelize, gbplus } = require('./db')
+const { readTxtFile } = require('./readTxt')
 
 const report = require('./report')
 const s3 = new S3Client({
@@ -11,7 +14,9 @@ const s3 = new S3Client({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
 })
-const openpay = new Openpay(process.env.MERCHANT_ID, process.env.PRIVATE_KEY)
+const openpay = new Openpay(process.env.MERCHANT_ID, process.env.PRIVATE_KEY, [
+  process.env.IS_PRODUCTION === 'true',
+])
 
 let NUM_CARGOS_GENERADOS = 0
 let NUM_CARGOS_ERROR = 0
@@ -21,12 +26,12 @@ async function registerCharge(payload) {
   try {
     await gbplus.query(`
       INSERT INTO op.pagoAdeudo (folioInterno, idOrden, montoPagar, tiempoCreacion, urlCodigoBarras, idTransaccionOP, urlPdf, referencia)
-      VALUES ('${payload.folioInterno}', ${payload.idOrden}, ${payload.montoPagar}, '${
-      payload.tiempoCreacion
-    }', 
-      '${payload.urlCodigoBarras.split('?')[0]}', '${payload.idTransaccionOP}', '${
-      payload.urlPdf
-    }', '${payload.referencia}')
+      VALUES ('${payload.folioInterno}', ${payload.idOrden}, ${
+      payload.montoPagar
+    }, '${payload.tiempoCreacion}', 
+      '${payload.urlCodigoBarras.split('?')[0]}', '${
+      payload.idTransaccionOP
+    }', '${payload.urlPdf}', '${payload.referencia}')
     `)
   } catch (error) {
     throw new Error(error)
@@ -71,7 +76,10 @@ async function generateBarCode(chargePayload) {
       folioInterno: chargePayload.folioInterno,
       idOrden: chargePayload.idOrden,
       montoPagar: chargePayload.saldoVencidoRea,
-      tiempoCreacion: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      tiempoCreacion: new Date()
+        .toISOString()
+        .replace('T', ' ')
+        .substring(0, 19),
       urlCodigoBarras: result?.payment_method?.barcode_url,
       urlPdf: result?.payment_method?.url_store,
       idTransaccionOP: result?.id,
@@ -80,9 +88,9 @@ async function generateBarCode(chargePayload) {
 
     await registerCharge(payload)
 
-    const fechaLimite = new Date(new Date().getTime() + 2592000000).toLocaleDateString(
-      'mx-SP',
-    )
+    const fechaLimite = new Date(
+      new Date().getTime() + 2592000000,
+    ).toLocaleDateString('mx-SP')
 
     const reportContent = report({
       saldoVencidoRea: payload.montoPagar,
@@ -105,11 +113,13 @@ async function generateBarCode(chargePayload) {
         return
       }
 
+      const [imgFile] = await pdfToPngBuffer(buffer)
+
       const params = {
         Bucket: 'gbplus.inter3.testing',
-        Key: `paynet/${chargePayload.idOrden}.pdf`,
-        Body: buffer,
-        ContentType: 'application/pdf',
+        Key: `paynet/${chargePayload.idOrden}_op.png`,
+        Body: imgFile,
+        ContentType: 'image/png',
         ACL: 'public-read',
       }
 
@@ -125,31 +135,12 @@ async function generateBarCode(chargePayload) {
   }
 }
 
-async function generateAllBarCodes(top = null) {
+async function generateAllBarCodes() {
   NUM_CARGOS_ERROR = 0
   NUM_CARGOS_GENERADOS = 0
   NUM_CARGOS_SIN_EMAIL = 0
 
-  const query = `SELECT
-      ${top ? `TOP ${top}` : ''}
-      s.idOrden,
-      s.foliointerno AS folioInterno,
-      s.idCliente,
-      s.idPersonaFisica,
-      s.saldoVencidoRea,
-      s.nombreCliente,
-      [dbo].[fn_getContactoPersonaFisica] ( idpersonafisica, 1301 ) AS telefonoFijo,
-      [dbo].[fn_getContactoPersonaFisica] ( idpersonafisica, 1305 ) AS email,
-      pa.urlCodigoBarras 
-    FROM
-      SICOINT_GenerarEnvioCobranzaView s WITH ( NOLOCK )
-      LEFT JOIN gbplus.op.pagoAdeudo pa WITH ( NOLOCK ) ON pa.folioInterno = s.folioInterno 
-    WHERE
-      saldoVencidoRea > 100 
-      AND idEstatus = 2609 
-      AND idDepartamento IN ( 7901, 7902, 79025 ) 
-      AND pa.urlCodigoBarras IS NULL  
-  ;`
+  const query = await readTxtFile('./query.txt')
 
   const [results] = await sequelize.query(query)
 
@@ -160,7 +151,9 @@ async function generateAllBarCodes(top = null) {
   for (let i = 0; i < results.length; i++) {
     if (results[i].email) {
       console.log(
-        `Generando cargo ${i + 1} de ${results.length} - idOrden: ${results[i].idOrden}`,
+        `Generando cargo ${i + 1} de ${results.length} - idOrden: ${
+          results[i].idOrden
+        }`,
       )
       const payload = {
         ...results[i],

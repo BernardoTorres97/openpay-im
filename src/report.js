@@ -180,7 +180,7 @@ module.exports = function report(payload) {
       <span style="margin-right: 10px">Powered by</span>
       <div style="width: 100px">
         <img
-          src="https://www.openpay.mx/_nuxt/img/openpay-color.77b290c.webp"
+          src="https://i.ibb.co/h1LYvY42/openpay-logo.png"
           alt="Logo Openpay"
           class="img-fluid"
         />

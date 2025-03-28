@@ -1,0 +1,19 @@
+SELECT
+      TOP 5
+      s.idOrden,
+      s.foliointerno AS folioInterno,
+      s.idCliente,
+      s.idPersonaFisica,
+      s.saldoVencidoRea,
+      s.nombreCliente,
+      [dbo].[fn_getContactoPersonaFisica] ( idpersonafisica, 1301 ) AS telefonoFijo,
+      [dbo].[fn_getContactoPersonaFisica] ( idpersonafisica, 1305 ) AS email,
+      pa.urlCodigoBarras 
+    FROM
+      SICOINT_GenerarEnvioCobranzaView s WITH ( NOLOCK )
+      LEFT JOIN gbplus.op.pagoAdeudo pa WITH ( NOLOCK ) ON pa.folioInterno = s.folioInterno 
+    WHERE
+      saldoVencidoRea > 100 
+      AND idEstatus = 2609 
+      AND idDepartamento IN ( 7901, 7902, 79025 ) 
+      AND pa.urlCodigoBarras IS NULL  

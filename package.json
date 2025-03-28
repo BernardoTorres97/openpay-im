@@ -11,14 +11,18 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.758.0",
     "axios": "^1.6.8",
+    "canvas": "^3.1.0",
     "dotenv": "^16.3.1",
     "html-pdf": "^3.0.1",
     "html-pdf-node": "^1.0.8",
     "mustache": "^4.2.0",
     "openpay": "^1.0.5",
     "pdf-creator-node": "^2.3.5",
+    "pdf-poppler": "^0.2.1",
+    "pdfjs-dist": "^5.0.375",
     "pdfkit": "^0.15.0",
     "sequelize": "^6.33.0",
+    "sharp": "^0.33.5",
     "tedious": "^16.4.1"
   }
 }
