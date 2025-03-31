@@ -2,6 +2,7 @@ const Openpay = require('openpay')
 const pdf = require('html-pdf')
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
 
+
 const { convertPdfToImage } = require('./pdfToJpg')
 const { sequelize, gbplus } = require('./db')
 const { readTxtFile } = require('./readTxt')
