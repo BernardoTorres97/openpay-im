@@ -1,44 +1,74 @@
-// utils/pdfToJpg.js
-const { exec } = require('child_process')
-const path = require('path')
-const fs = require('fs')
+const { PDFDocument } = require('pdf-lib')
+const sharp = require('sharp')
+const { fromBuffer } = require('pdf2pic')
 
 /**
- * Convierte un PDF a imágenes JPG usando Poppler (pdftoppm)
- * @param {string} inputPdfPath - Ruta al archivo PDF
- * @param {string} outputDir - Carpeta donde se guardarán las imágenes
- * @param {string} [outputPrefix='page'] - Prefijo para los archivos de salida
- * @returns {Promise<string[]>} - Array de rutas a las imágenes generadas
+ * Convierte un PDF (como Buffer) a una imagen (PNG, JPG, JPEG)
+ * @param {Buffer} pdfBuffer - Buffer del PDF a convertir
+ * @param {Object} [options={}] - Opciones de conversión
+ * @param {string} [options.format='png'] - Formato de salida (png, jpg, jpeg)
+ * @param {number} [options.quality=90] - Calidad para formatos JPG/JPEG (1-100)
+ * @param {number} [options.density=300] - DPI para la conversión
+ * @param {number} [options.page=1] - Número de página a convertir (1-based)
+ * @returns {Promise<Buffer>} Buffer con la imagen convertida
  */
-function convertPdfToJpg(inputPdfPath, outputDir, outputPrefix = 'page') {
-  return new Promise((resolve, reject) => {
-    const absoluteOutputDir = path.resolve(outputDir)
+async function convertPdfToImage(pdfBuffer, options = {}) {
+  const { format = 'png', quality = 90, density = 300, page = 1 } = options
 
-    // Crea la carpeta de salida si no existe
-    if (!fs.existsSync(absoluteOutputDir)) {
-      fs.mkdirSync(absoluteOutputDir, { recursive: true })
+  // Validaciones
+  if (!Buffer.isBuffer(pdfBuffer)) {
+    throw new Error('El input debe ser un Buffer')
+  }
+
+  if (!['png', 'jpg', 'jpeg'].includes(format.toLowerCase())) {
+    throw new Error('Formato no soportado. Use png, jpg o jpeg')
+  }
+
+  if (page < 1) {
+    throw new Error('El número de página debe ser mayor o igual a 1')
+  }
+
+  try {
+    // 1. Cargar el PDF
+    const pdfDoc = await PDFDocument.load(pdfBuffer)
+    const pageCount = pdfDoc.getPageCount()
+
+    if (page > pageCount) {
+      throw new Error(`El PDF solo tiene ${pageCount} páginas`)
     }
 
-    const outputFilePattern = path.join(absoluteOutputDir, outputPrefix)
-    const cmd = `pdftoppm -jpeg "${inputPdfPath}" "${outputFilePattern}"`
+    // 2. Extraer la página específica como PDF independiente
+    const newPdf = await PDFDocument.create()
+    const [copiedPage] = await newPdf.copyPages(pdfDoc, [page - 1])
+    newPdf.addPage(copiedPage)
+    const singlePagePdf = await newPdf.save()
 
-    exec(cmd, (error, stdout, stderr) => {
-      if (error) {
-        reject(new Error(`Error al convertir el PDF: ${error.message}`))
-        return
-      }
-
-      // Buscar archivos generados
-      const files = fs
-        .readdirSync(absoluteOutputDir)
-        .filter(
-          (file) => file.startsWith(outputPrefix) && file.endsWith('.jpg'),
-        )
-        .map((file) => path.join(absoluteOutputDir, file))
-
-      resolve(files)
+    // 3. Convertir el PDF de una página a imagen
+    const convert = fromBuffer(singlePagePdf, {
+      density,
+      saveFilename: 'temp', // No se usa realmente ya que trabajamos en memoria
+      savePath: '/tmp', // Ruta temporal, aunque no escribimos en disco
+      format,
+      quality,
+      width: 2480, // Ancho máximo
+      height: 3508, // Alto máximo (A4)
+      preserveAspectRatio: true,
     })
-  })
-}
 
-module.exports = { convertPdfToJpg }
+    const image = await convert(page, { responseType: 'buffer' })
+
+    // 4. Procesar con sharp para optimizar
+    let sharpProcessor = sharp(image.buffer)
+
+    if (format.toLowerCase() === 'png') {
+      sharpProcessor = sharpProcessor.png({ compressionLevel: 9 })
+    } else {
+      sharpProcessor = sharpProcessor.jpeg({ quality })
+    }
+
+    return await sharpProcessor.toBuffer()
+  } catch (error) {
+    throw new Error(`Error al convertir PDF a imagen: ${error.message}`)
+  }
+}
+module.exports = { convertPdfToImage }

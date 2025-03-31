@@ -2,7 +2,7 @@ const Openpay = require('openpay')
 const pdf = require('html-pdf')
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
 
-const { convertPdfToJpg } = require('./pdfToJpg')
+const { convertPdfToImage } = require('./pdfToJpg')
 const { sequelize, gbplus } = require('./db')
 const { readTxtFile } = require('./readTxt')
 
@@ -113,7 +113,7 @@ async function generateBarCode(chargePayload) {
         return
       }
 
-      const [imgFile] = await convertPdfToJpg(buffer)
+      const imgFile = await convertPdfToImage(buffer)
 
       const params = {
         Bucket: 'gbplus.inter3.testing',
