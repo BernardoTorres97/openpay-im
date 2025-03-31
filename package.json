@@ -17,7 +17,7 @@
     "html-pdf-node": "^1.0.8",
     "mustache": "^4.2.0",
     "openpay": "^1.0.5",
-    "pdfjs-dist": "^5.0.375",
+    "pdfjs-dist": "^5.1.91",
     "pdfkit": "^0.15.0",
     "sequelize": "^6.33.0",
     "sharp": "^0.33.5",

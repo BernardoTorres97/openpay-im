@@ -1,44 +1,33 @@
-// utils/pdfToJpg.js
-const { exec } = require('child_process')
-const path = require('path')
-const fs = require('fs')
+const { createCanvas } = require('canvas')
 
-/**
- * Convierte un PDF a imágenes JPG usando Poppler (pdftoppm)
- * @param {string} inputPdfPath - Ruta al archivo PDF
- * @param {string} outputDir - Carpeta donde se guardarán las imágenes
- * @param {string} [outputPrefix='page'] - Prefijo para los archivos de salida
- * @returns {Promise<string[]>} - Array de rutas a las imágenes generadas
- */
-function convertPdfToJpg(inputPdfPath, outputDir, outputPrefix = 'page') {
-  return new Promise((resolve, reject) => {
-    const absoluteOutputDir = path.resolve(outputDir)
+async function convertPdfToJpg(pdfBuffer, pagesToProcess = null) {
+  const pdfjsLib = await import('pdfjs-dist')
+  const worker = await import('pdfjs-dist/build/pdf.worker.mjs')
 
-    // Crea la carpeta de salida si no existe
-    if (!fs.existsSync(absoluteOutputDir)) {
-      fs.mkdirSync(absoluteOutputDir, { recursive: true })
-    }
+  pdfjsLib.GlobalWorkerOptions.workerSrc = worker.default
 
-    const outputFilePattern = path.join(absoluteOutputDir, outputPrefix)
-    const cmd = `pdftoppm -jpeg "${inputPdfPath}" "${outputFilePattern}"`
+  const loadingTask = pdfjsLib.getDocument({ data: pdfBuffer })
+  const pdfDocument = await loadingTask.promise
 
-    exec(cmd, (error, stdout, stderr) => {
-      if (error) {
-        reject(new Error(`Error al convertir el PDF: ${error.message}`))
-        return
-      }
+  const numPages = pdfDocument.numPages
+  const pages =
+    pagesToProcess || Array.from({ length: numPages }, (_, i) => i + 1)
+  const results = []
 
-      // Buscar archivos generados
-      const files = fs
-        .readdirSync(absoluteOutputDir)
-        .filter(
-          (file) => file.startsWith(outputPrefix) && file.endsWith('.jpg'),
-        )
-        .map((file) => path.join(absoluteOutputDir, file))
+  for (const pageNum of pages) {
+    const page = await pdfDocument.getPage(pageNum)
+    const viewport = page.getViewport({ scale: 2.0 })
 
-      resolve(files)
-    })
-  })
+    const canvas = createCanvas(viewport.width, viewport.height)
+    const context = canvas.getContext('2d')
+
+    await page.render({ canvasContext: context, viewport }).promise
+
+    const buffer = canvas.toBuffer('image/jpeg', { quality: 0.9 })
+    results.push(buffer)
+  }
+
+  return results
 }
 
 module.exports = { convertPdfToJpg }
